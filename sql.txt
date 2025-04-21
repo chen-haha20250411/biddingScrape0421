@@ -1,0 +1,43 @@
+CREATE DATABASE IF NOT EXISTS bidding_data;
+USE bidding_data;
+
+CREATE TABLE IF NOT EXISTS bidding_info (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    project_number VARCHAR(255) NOT NULL,
+    project_name VARCHAR(255) NOT NULL,
+    publish_date DATE NOT NULL,
+    content TEXT,
+    UNIQUE KEY unique_bid (project_number, project_name, publish_date)
+);
+
+-- 添加 project_id 字段，字符串格式
+ALTER TABLE bidding_info
+ADD COLUMN project_id VARCHAR(255);
+
+-- 添加 total_content 字段，长文本格式
+ALTER TABLE bidding_info
+ADD COLUMN total_content LONGTEXT;
+
+-- 添加 data_source 字段，字符串格式
+ALTER TABLE bidding_info
+ADD COLUMN data_source VARCHAR(255);
+
+ALTER TABLE bidding_info
+ADD COLUMN html_url VARCHAR(255);
+
+
+/************************zhongbiao*******************/
+
+-- 创建 zhongbiao 表
+CREATE TABLE IF NOT EXISTS zhongbiao (
+    `publishDate` DATE COMMENT '中标日期',
+    `projectNo` VARCHAR(255) COMMENT '项目的唯一编号',
+    `customer` VARCHAR(255) COMMENT '招标的客户名称',
+    `noticeType` VARCHAR(255) COMMENT '招标的类型',
+    `title` VARCHAR(255) COMMENT '招标项目的标题',
+    `productLabels` TEXT COMMENT '中标货品的名称，可能较长，使用 TEXT 类型',
+    `winnerAmount` DECIMAL(15, 2) COMMENT '中标合计金额，保留两位小数',
+    `remark` TEXT COMMENT '相关备注信息，可能较长，使用 TEXT 类型',
+    `winnerPrincipal` VARCHAR(255) COMMENT '中标的供应商名称'
+);
+

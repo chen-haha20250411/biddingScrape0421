@@ -1,0 +1,98 @@
+[cookies]
+BIDUPSID = 8D320693D8EF7AD8C7C878FCB6FED073
+PSTM = 1724377612
+BAIDUID = BE8DAACAF281C0EE6081B8791B58145F:FG=1
+H_PS_PSSID = 60564_60359_60621_60629_60677
+BAIDUID_BFESS = BE8DAACAF281C0EE6081B8791B58145F:FG=1
+MCITY = -180%3A
+__bid_n = 191b596bf906864d36dc32
+Hm_lvt_8cfca2ee1c078aaed86e031c3eb09486 = 1725328441
+HMACCOUNT = 8506805A99DF418B
+sajssdk_2015_cross_new_user = 1
+sensorsdata2015jssdkcross = %7B%22distinct_id%22%3A%22191b596c104614-044af05686fcfac-45410429-1440000-191b596c1055ae%22%2C%22first_id%22%3A%22%22%2C%22props%22%3A%7B%22%24latest_traffic_source_type%22%3A%22%E7%9B%B4%E6%8E%A5%E6%B5%81%E9%87%8F%22%2C%22%24latest_search_keyword%22%3A%22%E6%9C%AA%E5%8F%96%E5%88%B0%E5%80%BC_%E7%9B%B4%E6%8E%A5%E6%89%93%E5%BC%80%22%2C%22%24latest_referrer%22%3A%22%22%7D%2C%22identities%22%3A%22eyIkaWRlbnRpdHlfY29va2llX2lkIjoiMTkxYjU5NmMxMDQ2MTQtMDQ0YWYwNTY4NmZjZmFjLTQ1NDEwNDI5LTE0NDAwMDAtMTkxYjU5NmMxMDU1YWUifQ%3D%3D%22%2C%22history_login_id%22%3A%7B%22name%22%3A%22%22%2C%22value%22%3A%22%22%7D%2C%22%24device_id%22%3A%22191b596c104614-044af05686fcfac-45410429-1440000-191b596c1055ae%22%7D
+login_id = 365954306:0
+acc_id = 365954306
+GAT_QRNIGOL_FFA = cf1d3d9b1a82d2f87d633bd8a03423
+acc_token = fe482400914a0dc40a136f8f1a5bb6d2cf66bf00176c71eaebdd0bcc75d9fa75
+device_type = web751032992398311424
+XY_BID_LOGIN = 365954306.365954306:0.fe482400914a0dc40a136f8f1a5bb6d2cf66bf00176c71eaebdd0bcc75d9fa75.web751032992398311424
+ppfuid = FOCoIC3q5fKa8fgJnwzbE67EJ49BGJeplOzf+4l4EOtCTv/6bR/RdKn3zf/D+boU6vnzZhEWyqDhSEFNlVblk2mWcgpVpyJ2nxK57h0xPJ+DrkEmc4WGfUe2G1KLC3KCIPumJLi+Mb9b10tvVUB2oz8gck6HBBTgASHlJwnDglUa6LDjwufwEp8vMS5hOMhl0KCW4y3gL0+x+9R3bd9LHA9XuOIwqEus91fsGAasi9SPUQypwXgMvmYtBe8+kSerOLi6wbJx8UETmGIm1vZ5qpR67GJOgKAN/9ZA0cyBytBtqZwmoCOEGRMM8kMfiZxQr34bNebXxHF1O1xGqlD+S6Y7EhmPlFD5EvEcmXXTdJCZVAlwoWFZJOMNrQN/RCICpklEtTKfx5hHc9j4nurRrcTo/WpI4QSleGJX8NkGSKz9rrf4+pJcZ7i/8Zi+xPwICaMgWt9kzMMhvghTe6zpjDKm4QzBaDre6qMgfobZt62yTwOShk/KNVESMSTXm5OLH4xMKg+S+srB+qGokn1gCKuZnbP6oD0ME1Cq/yoK5d+Tbz3Y5/2wq73CPbmOPN56kS+i8xwYVQpxYmLeajlRHW5cMy9mV9uAcDT2ZIp4nes7bU8sepFtgR//zkhbMK4/JBPoTVZoEQWydCP8RSiydpVmzvBKf/KJGn+N01LcxryYC14x5T2rKfpKgm+/rfjlScw2b63z8l9WJ+EmMIswhUAxjRer+a3slsL588nOBR90/4mPYCZh0bGwyXH2e7JZZBhAiELNJs+eMX3Zg9W4RUmO5TqpY1A/E2+astBtVtwckxzjF65GDtt+kRj+/Buhrzsx/gNHFvcAA8VLPAchC2xl7lebB3HyXHx/HqIOYMaUlifI+O37jeqnHmHy2ghJxffhMWkyzQ+oZHxVATTg0kun69Lm4VRm5mrkMy4Qwu1fHQd3SAcNJ0na0v4Wz90QoKDbFUOPsQE72/a0kEWC2KhuPKLM9/6dZ00isWP1M71YVK+GcriYXdSGsdTLua2Z4rsiMpSciOy0GtH0BDIaHROBNUIGus13vk3BD9zddjzj9ZJseUlzwEV+bscicwIjSCwQvM4e3xnzVzlld+zvYN0q7Yw+xx5u95PSoz+nO88s9TqjpS2CuGXeoK3JV0ZscRkFfq6EPtJxOFPNy/1ATqphVNhJG/707P2GcCYlcR4=
+BDUSS = is4YnVEYktUWHlwMjlnbEVMdUhEM2gxcDNRZUloYWNSMEdqQm9NWFh0dWhLdjVtQUFBQUFBPT0AAAAAAAAAAGlexSr~H~RLAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAKGd1mbfaqz~V
+bdrtk = 17253410894UaYfApkB8ztr-K77iw3OPG3zGYyK972tJimtI5e_NA-kWOMNrxnQ9QgtxAqWRp9QeE_ugSSSJw8qVP9EQUn7trAow3ORgo5t4eyJGj5P24%3D
+BDUSS_BFESS = is4YnVEYktUWHlwMjlnbEVMdUhEM2gxcDNRZUloYWNSMEdqQm9NWFh0dWhLdjVtQUFBQUFBPT0AAAAAAAAAAGlexSr~H~RLAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAKGd1mbfaqz~V
+Hm_lpvt_8cfca2ee1c078aaed86e031c3eb09486 = 1725344776
+RT = "z=1&dm=baidu.com&si=7e72d83e-e957-47c4-b420-95d343cab296&ss=m0m0hbq9&sl=d&tt=co0&bcn=https%3A%2F%2Ffclog.baidu.com%2Flog%2Fweirwood%3Ftype%3Dperf"
+ab_sr = 1.0.1_MzEyZTcwMzRjZDg5YzhkMTlmYjllZWFjNjQ3M2ViZmIxZmEzYTAwY2U2YzQ3MDI5M2ExN2Q3MjJhNDk5Y2E4ZDFhM2M1Y2MwZDE0NjEyNWY0NTEwYWQ1NjBlMzkwYjcxZTliOTM2NzM5Nzg0OWVjYzU5NGM4NDQ1ODNlZWU2NjQzNmYxOWZiMDkyYTlkZjZhNjA4NTM3MTBlZWUzNThiYQ==
+
+[headers]
+Connection = keep-alive
+Auth-Type = PAAS
+Env = WEB
+User-Agent = Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.198 Safari/537.36
+Content-Type = application/json;charset=UTF-8
+Accept = application/json, text/plain, */*
+X-Timestamp = 1725344760
+Acs-Token = 1725275032578_1725344780756_NWtPkXqgQaoZWn9hZMUuLQYTc0bNbusjDUM60I1z2VnAJhTtncWKMgGtmXPWFtD+20RTVqBsYuEvY7JOj/+ULgl8gp45ATqXNntr5e16OJmOGXzix1e5X1mOqt4pLhHbj+L5k1kphEnADUg2Io/8OFRcznI6yAegholW4DB8UKtxNFCDxJXd+cDKA/Sf2aapWgexAf0vOKOaGjBLIx0ClvYqExX9Gj/XFFh6KIP1WKo4VKOkXiRL3gfoS2bnuKTKhIc2Gun/ONm4d9XiR34AsXlRS0ZIkUgLv+2cpeI/u+odTIQ9iObsKLV+cZPjCPdQ1JnEQCHoumLchXLe0oXfiruHXOBOnF8X4ZbyueKCvO2w9jZE/vqvHaHXLk71fcAR
+X-Sourceid = 25eb9d34bb18f598ab6bf3fac597d8a5
+X-Requested-With = XMLHttpRequest
+Api-Version = 0
+User-Info = uc_id=;uc_appid=585;acc_token=cd8d63dd38ccdad4217988122bfb100fcc0f4c8b0539d2cfba6ab16dc7119fa9;acc_id=365954306;login_id=365954306:0;device_type=web751032925226532864;paas_appid=16;version=12;login_type=null
+Client-Version = 0
+Origin = https://xunbiaobao.baidu.com
+Sec-Fetch-Site = same-origin
+Sec-Fetch-Mode = cors
+Sec-Fetch-Dest = empty
+Referer = https://xunbiaobao.baidu.com/company?id=NTc0NTgzMzE3MjU5MTI4&source=self
+Accept-Language = zh-CN,zh;q=0.9
+BDUSS = is4YnVEYktUWHlwMjlnbEVMdUhEM2gxcDNRZUloYWNSMEdqQm9NWFh0dWhLdjVtQUFBQUFBPT0AAAAAAAAAAGlexSr~H~RLAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAKGd1mbfaqz~V
+bdrtk = 17253410894UaYfApkB8ztr-K77iw3OPG3zGYyK972tJimtI5e_NA-kWOMNrxnQ9QgtxAqWRp9QeE_ugSSSJw8qVP9EQUn7trAow3ORgo5t4eyJGj5P24%3D
+BDUSS_BFESS = is4YnVEYktUWHlwMjlnbEVMdUhEM2gxcDNRZUloYWNSMEdqQm9NWFh0dWhLdjVtQUFBQUFBPT0AAAAAAAAAAGlexSr~H~RLAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAKGd1mbfaqz~V
+Hm_lpvt_8cfca2ee1c078aaed86e031c3eb09486 = 1725344776
+RT = "z=1&dm=baidu.com&si=7e72d83e-e957-47c4-b420-95d343cab296&ss=m0m0hbq9&sl=d&tt=co0&bcn=https%3A%2F%2Ffclog.baidu.com%2Flog%2Fweirwood%3Ftype%3Dperf"
+ab_sr = 1.0.1_MzEyZTcwMzRjZDg5YzhkMTlmYjllZWFjNjQ3M2ViZmIxZmEzYTAwY2U2YzQ3MDI5M2ExN2Q3MjJhNDk5Y2E4ZDFhM2M1Y2MwZDE0NjEyNWY0NTEwYWQ1NjBlMzkwYjcxZTliOTM2NzM5Nzg0OWVjYzU5NGM4NDQ1ODNlZWU2NjQzNmYxOWZiMDkyYTlkZjZhNjA4NTM3MTBlZWUzNThiYQ==
+
+[json_data]
+query.enterpriseId = NTc0NTgzMzE3MjU5MTI4
+query.keyword = 
+query.provinceCodes = []
+query.enterpriseMatchFields = ["winner"]
+query.informationTypes = []
+query.startTime = 
+query.endTime = 
+query.pageNum = 1
+query.pageSize = 100
+query.tenderPrincipalTypeCodes = []
+query.platform = pc
+
+[sup_dic]
+1.enterpriseId = NTc0NTgzMzE3MjU5MTI4
+1.supName = 宁波华力信息系统工程有限公司
+2.enterpriseId = NzQxNjMxMTE0NjU2MjU4
+2.supName = 宁波市利宏信息系统工程有限公司
+3.enterpriseId = ODE3NDY2MjY0MTYxMjI0
+3.supName = 宁波胜达高科信息工程有限公司
+4.enterpriseId = MTA1NDU1NDU3MzIxMzE1
+4.supName = 宁波中瑞信息科技有限公司
+5.enterpriseId = NTAyNTg2MDE5NjkyODA5
+5.supName = 宁波市科技园区信达科技有限公司
+6.enterpriseId = OTIzNTY2ODE4NzA3MTg5
+6.supName = 宁波市沪东信息工程有限公司
+7.enterpriseId = NzY4NTM5MjE5NDQ3MTAy
+7.supName = 宁波新远方美承数码科技有限公司
+8.enterpriseId = NzY0NTg0OTk3NDIyMjk0
+8.supName = 宁波高欣信息科技有限公司
+8.ptype = 打印机框架
+9.enterpriseId = NDAyNTczODIxMjg3MjUx
+9.supName = 宁波市中欣数码科技有限公司
+9.ptype = 打印机框架
+10.enterpriseId = OTcwMjMzMTUxNDk4MDI0
+10.supName = 宁波京达联创信息科技有限公司
+10.ptype = 打印机框架
+11.enterpriseId = MjU2MzQyOTgyNzg5ODg0
+11.supName = 宁波嘉劲智能科技有限公司
+11.ptype = 打印机框架
+12.enterpriseId = MDE3NDgxMzIwODg4MzEz
+12.supName = 浙江艾凯普计算机系统服务有限公司
+12.ptype = PC
+13.enterpriseId = MTI4OTAxNjY2ODYzNTQy
+13.supName = 宁波聚超翔信息技术服务有限公司
