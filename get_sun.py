@@ -4,27 +4,17 @@ from datetime import datetime
 import logging
 import time
 import random
+import threading
+from concurrent.futures import ThreadPoolExecutor
 from database_utils.db_manager import DBManager
-from database_utils.utils import FileUtils
+from database_utils.utils import FileUtils, get_time_range
 
 # 配置日志记录
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-# 抓取数据
-def scrape_data():
-    # 通过包调用工具类的方法读取关键字
-    keywords = FileUtils.read_keywords()
-    db_manager = DBManager()
-    conn = db_manager.connect_db()
-    # 检查 conn 是否为 None
-    logging.info(f"数据库连接状态: {conn is not None}")
-    if conn is None:
-        logging.error("数据库连接失败，无法继续抓取数据。")
-        return
-
-    headers = {
+headers = {
     'Accept': 'application/json, text/plain, */*',
-    'Accept-Language': 'zh-CN,zh;q=0.9',
+    'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6',
     'Connection': 'keep-alive',
     'Content-Type': 'application/json;charset=UTF-8',
     'Origin': 'https://ygcg.nbcqjy.org',
@@ -32,83 +22,162 @@ def scrape_data():
     'Sec-Fetch-Dest': 'empty',
     'Sec-Fetch-Mode': 'cors',
     'Sec-Fetch-Site': 'same-origin',
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.6261.95 Safari/537.36',
-    'sec-ch-ua': '"Chromium";v="122", "Not(A:Brand";v="24", "Google Chrome";v="122"',
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36 Edg/135.0.0.0',
+    'sec-ch-ua': '"Microsoft Edge";v="135", "Not-A.Brand";v="8", "Chromium";v="135"',
     'sec-ch-ua-mobile': '?0',
     'sec-ch-ua-platform': '"Windows"',
-    }
+}
 
-    json_data = {
-        'pageIndex': 1,
-        'pageSize': 15,
-        'classID': '21',
-        'ZtbTypeId': None,
-        'InfoTypeId': None,
-    }
+json_data = {
+    'pageIndex': 1,
+    'pageSize': 15,
+    'classID': '21',
+    'ZtbTypeId': None,
+    'InfoTypeId': None,
+}
 
+
+
+def parse_date(date_str):
+    """解析日期字符串"""
+    if not date_str:
+        return None
+    for fmt in ('%Y-%m-%dT%H:%M:%S.%f', '%Y-%m-%dT%H:%M:%S'):
+        try:
+            return datetime.strptime(date_str, fmt).date()
+        except ValueError:
+            continue
+    logging.warning(f"无法解析日期字符串 {date_str}")
+    return None
+
+# 抓取数据
+processed_ids = set()
+
+def process_item(bulletinId):
+    """处理单个公告项"""
+    if bulletinId in processed_ids:
+        logging.info(f"公告ID {bulletinId} 已在处理中或已完成，跳过")
+        return None
+    
+    processed_ids.add(bulletinId)
     try:
-        # 随机延时 1 到 3 秒，模拟人为操作
-        time.sleep(random.uniform(1, 3))
-        # 发起请求，不设置代理
-        response = requests.post('https://ygcg.nbcqjy.org/api/Portal/GetBulletinList', headers=headers, json=json_data)
-        response.raise_for_status()
-        # 尝试解析为 JSON 数据并打印
-        json_data = response.json()
-        print(json_data)
+        detail_response = requests.post(f"https://ygcg.nbcqjy.org/detail?bulletinId={bulletinId}", headers=headers)
+        if detail_response:
+            total_content = detail_response.text
+            title = f'阳光采购网 关键字:[{", ".join(matched_keywords)}] {bulletinTitle}'
+            data_source = "https://ygcg.nbcqjy.org"
+            
+            return (
+                prjNo, title, publish_date, total_content, 
+                bulletinId, data_source,
+                f"https://ygcg.nbcqjy.org/detail?bulletinId={bulletinId}"
+            )
+    except KeyError as e:
+        logging.warning(f"解析公告项失败，缺少键 {e}")
+        processed_ids.remove(bulletinId)
+    except Exception as e:
+        logging.error(f"处理公告ID {bulletinId} 时发生异常: {e}")
+        processed_ids.remove(bulletinId)
+    return None
 
-        # 后续需要根据实际 JSON 结构修改获取项目信息的逻辑
-        items = json_data.get('data', [])  # 示例，需根据实际修改
-
-        for item in items:
+def scrape_data():
+    keywords = FileUtils.read_keywords()
+    db_manager = DBManager()
+    conn = db_manager.connect_db()
+    logging.info(f"数据库连接状态: {conn is not None}")
+    if conn is None:
+        logging.error("数据库连接失败，无法继续抓取数据。")
+        return
+    start_date, end_date = get_time_range()
+    logging.info(f"获取的时间范围: 开始日期 {start_date}, 结束日期 {end_date}")
+    if start_date is None or end_date is None:
+        logging.error("无法获取有效的时间范围，无法继续抓取数据。")
+        return
+    page_index = 1
+    stop_flag = False
+    data_to_insert = []
+    with ThreadPoolExecutor(max_workers=5) as executor:
+        while not stop_flag:
+            current_page = page_index  # 获取当前页的副本
+            json_data['pageIndex'] = current_page
+            logging.info(f"正在抓取阳光网第 {current_page} 页数据")
+            response = requests.post('https://ygcg.nbcqjy.org/api/Portal/GetBulletinList', 
+                                   headers=headers, 
+                                   json=json_data)
+            if not response or response.status_code != 200:
+                logging.error(f"请求失败，状态码: {response.status_code if response else '无响应'}")
+                stop_flag = True  # 添加停止标志
+                break
             try:
-                # 这里需要根据实际 JSON 结构修改获取信息的方式
-                project_number = item.get('project_number', '')
-                project_name = item.get('project_name', '')
-                addtime = item.get('addtime', '')
-                title = item.get('title', '')
-                detail_url = item.get('detail_url', '')
-
-                # 尝试将 addtime 转换为日期对象
-                publish_date = datetime.strptime(addtime, '%Y-%m-%d').date() if addtime else None
-
-                if publish_date and publish_date < datetime(2025, 1, 1).date():
+                response_json = response.json()
+            except ValueError:
+                logging.error("解析公告列表的 JSON 数据失败")
+                stop_flag = True  # 添加停止标志
+                break
+            all_bulletin_info = response_json.get('body', {}).get('data', {}).get('bulletinList', [])
+            if not all_bulletin_info:
+                stop_flag = True
+                logging.info(f"阳光网第 {current_page} 页无数据，停止抓取")
+                break
+            
+            futures = []
+            for item in all_bulletin_info:
+                addtime = item.get('publishDate')
+                if not addtime:
+                    logging.warning(f"公告项缺少发布日期: {item}")
                     continue
-
-                # 存储匹配到的关键字
-                matched_keywords = []
-                if publish_date and publish_date.year >= 2025:
-                    for keyword in keywords:
-                        if keyword in title:
-                            matched_keywords.append(keyword)
+                
+                publish_date = parse_date(addtime)
+                if not publish_date or publish_date < start_date or publish_date > end_date:
+                    logging.debug(f"跳过超出时间范围的公告: {item.get('bulletinId')}")
+                    stop_flag = True
+                    break
+          
+                    
+                bulletinId = item.get('bulletinId')
+                prjNo = item.get('prjNo')
+                bulletinTitle = item.get('bulletinTitle')
+                matched_keywords = [keyword for keyword in keywords if keyword in bulletinTitle]
 
                 if matched_keywords:
-                    if db_manager.check_project_number_exists(project_number):
+                    if db_manager.check_item_id_exists(prjNo, bulletinId):
+                        logging.info(f"公告 {prjNo}-{bulletinId} 已存在，跳过")
                         continue
+                    if bulletinId not in processed_ids:
+                        futures.append(executor.submit(process_item, bulletinId))
+                    else:
+                        logging.info(f"公告ID {bulletinId} 已在处理队列中，跳过重复提交")
+            
+            for future in futures:
+                result = future.result()
+                if result:
+                    data_to_insert.append(result)
+            
+            page_index += 1  # 递增操作放在最后
+            time.sleep(random.uniform(1, 3))
 
-                    # 获取详细内容前随机延时
-                    time.sleep(random.uniform(1, 3))
-                    try:
-                        detail_response = requests.get(detail_url, headers=headers)
-                        detail_response.raise_for_status()
-                        total_content = detail_response.text
-                    except requests.RequestException as e:
-                        logging.error(f"获取详细内容失败: {e}")
-                        continue
-
-                    title = '[阳光采购网 匹配关键字' + ', '.join(matched_keywords) + '] ' + title
-                    print(f"标题: {title},  项目编号: {project_number}, 发布时间: {addtime}")
-                    # db_manager.insert_data(project_number, title, publish_date, total_content, detail_url)
-
-            except ValueError as e:
-                logging.warning(f"日期转换失败: {e}")
-                continue
-
-    except requests.RequestException as e:
-        logging.error(f"请求失败: {e}")
-    except ValueError as e:
-        logging.error(f"解析 JSON 数据失败: {e}")
-    finally:
-        db_manager.close_connection()
+    # 等待所有线程完成
+    executor.shutdown(wait=True)
+    # 批量插入数据前添加日志
+    logging.info(f"准备批量插入 {len(data_to_insert)} 条数据")
+    if data_to_insert:
+        try:
+            success = db_manager.batch_insert_data(data_to_insert)
+            if success:
+                logging.info(f"成功批量插入 {len(data_to_insert)} 条数据")
+            else:
+                logging.error("批量插入数据失败")
+        except Exception as e:
+            logging.error(f"批量插入数据时发生异常: {e}")
+            raise
+        finally:
+            # 确保关闭数据库连接
+            db_manager.close_connection()
+            logging.info("数据库连接已关闭")
 
 if __name__ == "__main__":
-    scrape_data()
+    try:
+        scrape_data()
+    except Exception as e:
+        logging.error(f"执行 get_sun.py 时发生错误: {e}")
+    

@@ -60,12 +60,12 @@ def getdata(supName, enterpriseId, cookies, headers, json_data):
     data_all = [['日期', '项目编号', '客户', '类型', '标题', '货品名称', '合计金额', '备注', '供应商']]
     json_data['query']['enterpriseId'] = enterpriseId
     db_manager = DBManager()
-    mydb = db_manager.connect_db()
-    if not mydb:
+    conn = db_manager.connect_db()
+    if not conn:
         logging.error("数据库连接失败")
         return
 
-    mycursor = mydb.cursor(buffered=True)
+    mycursor = conn.cursor(buffered=True)
     start_date, end_date = get_time_range()
     if start_date is None:
         logging.warning("无法获取有效的开始日期，使用默认值 2025-04-01")
@@ -123,30 +123,46 @@ def getdata(supName, enterpriseId, cookies, headers, json_data):
 
     try:
         process_and_insert_data(mycursor, data_all)
-        mydb.commit()  # 提交事务
         logging.info(f"{supName} 数据插入成功")
     except Exception as e:
-        mydb.rollback()  # 回滚事务
         logging.error(f"{supName} 处理和插入数据时出错: {e}")
     finally:
-        mycursor.close()
-        db_manager.close_connection()
-
-if __name__ == '__main__':
-    # 使用封装的函数读取配置
-    cookies, headers, json_data, sup_dic = read_config('config/xunbiaow_cookies.txt')
-
-    # 并发请求
-    future_to_value = {}
-    with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_CONCURRENT_REQUESTS) as executor:
-        for value in sup_dic.values():
-            future = executor.submit(getdata, value.get("supname"), value.get("enterpriseid"), cookies, headers, json_data)
-            future_to_value[future] = value
-
-    for future in concurrent.futures.as_completed(future_to_value):
-        value = future_to_value[future]
         try:
-            future.result()
-            logging.info(f"{value.get('supname')} 任务完成")
+            if 'mycursor' in locals() and mycursor:
+                mycursor.close()
+            if conn and hasattr(conn, 'is_connected') and conn.is_connected():
+                conn.close()
+                logging.debug("数据库连接已关闭")
         except Exception as e:
-            logging.error(f"{value.get('supname')} 任务出错: {e}")
+            logging.error(f"关闭连接时发生错误: {e}")
+        finally:
+            pass
+
+
+def scrape_data():
+    try:
+        # 使用封装的函数读取配置
+        cookies, headers, json_data, sup_dic = read_config('config/xunbiaow_cookies.txt')
+        
+        # 并发请求
+        future_to_value = {}
+        with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_CONCURRENT_REQUESTS) as executor:
+            for value in sup_dic.values():
+                future = executor.submit(getdata, value.get("supname"), value.get("enterpriseid"), cookies, headers, json_data)
+                future_to_value[future] = value
+
+        for future in concurrent.futures.as_completed(future_to_value):
+            value = future_to_value[future]
+            try:
+                future.result()
+                logging.info(f"{value.get('supname')} 任务完成")
+            except Exception as e:
+                logging.error(f"{value.get('supname')} 任务出错: {e}")
+    except Exception as e:
+        logging.error(f"执行 get_xunbiaowang.py 时发生错误: {e}")
+
+if __name__ == "__main__":
+    try:
+        scrape_data()
+    except Exception as e:
+        logging.error(f"执行 get_GuoJi.py 时发生错误: {e}")

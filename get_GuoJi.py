@@ -44,7 +44,10 @@ def scrape_data():
     }
 
     page = 1
-    while True:
+    stop_flag = False
+    data_to_insert = []  # 新增：存储待插入的数据
+    
+    while stop_flag == False:
         data = {
             'page': str(page),
             'keyword': '',
@@ -74,7 +77,7 @@ def scrape_data():
                 contents = item.get('contents', '')
                 item_id = item.get('id', '')
                 addtime = item.get('addtime', '')
-                project_number = item.get('project_number', '') 
+                project_number = item.get('projectnum', '') 
                 # 尝试将 addtime 转换为日期对象
                 publish_date = datetime.strptime(addtime, '%Y-%m-%d').date() if addtime else None
                 if publish_date and (publish_date < start_date or publish_date > end_date):
@@ -86,35 +89,55 @@ def scrape_data():
                     if keyword in title or keyword in contents:
                         matched_keywords.append(keyword)
                 if matched_keywords:
-                    if db_manager.check_item_id_exists(item_id):
+                    if db_manager.check_item_id_exists(project_number, item_id):
+                        logging.info(f"国际招标网记录 ID {item_id} 已存在于数据库中，跳过处理。")
                         continue
-                    # 获取详细内容
+
+                    # 构建详情页URL
                     detail_url = f'http://www.nbbidding.com/Home/Notice/news_detail?id={item_id}'
-                    try:
-                        detail_response = requests.get(detail_url, cookies=cookies, headers=headers, verify=False)
-                        detail_response.raise_for_status()
+                    
+                    # 获取详细内容
+                    detail_response = requests.get(detail_url, cookies=cookies, headers=headers, verify=False)
+                    if detail_response:
                         total_content = detail_response.text
-                    except requests.RequestException as e:
-                        logging.error(f"获取详细内容失败: {e}")
-                        continue
-                    title = '[国际招标网 匹配关键字' + ', '.join(matched_keywords) + '] ' + title
-                    # 假设 project_id 和 data_source 可以从 item 中获取，这里需要根据实际情况修改
-                    project_id = item_id
-                    data_source = 'http://www.nbbidding.com'
-                    print(f"标题: {title},  ID: {item_id}, 发布时间: {addtime}, 项目编号：{project_number}")
-                    db_manager.insert_data(project_number, title, publish_date, total_content, project_id, total_content, data_source, detail_url)
+                        title = '国际招标网 关键字[' + ', '.join(matched_keywords) + '] ' + title
+                        data_source = 'http://www.nbbidding.com'
+                        
+                        # 添加到待插入列表，而不是立即插入
+                        data_to_insert.append((
+                            project_number, title, publish_date, total_content,
+                            item_id, total_content, data_source, detail_url
+                        ))
+                        
+                        logging.info(f"准备插入: 标题: {title}, ID: {item_id}, 发布时间: {addtime}, 项目编号：{project_number}")
             except ValueError as e:
                 logging.warning(f"日期转换失败: {e}")
                 continue
-        if stop_flag:
-            break
-        conn.commit()
+                
         page += 1
-        # 随机延时 1 到 3 秒，可根据实际情况调整范围
         time.sleep(random.uniform(1, 3))
 
-    db_manager.close_connection()
+    # 批量插入数据
+    if data_to_insert:
+        try:
+            success = db_manager.batch_insert_data(data_to_insert)
+            if success:
+                logging.info(f"成功批量插入 {len(data_to_insert)} 条数据")
+            else:
+                logging.error("批量插入数据失败")
+        except Exception as e:
+            logging.error(f"批量插入数据时发生异常: {e}")
+            raise
+        finally:
+            # 修改为直接关闭连接
+            if hasattr(db_manager, 'conn') and db_manager.conn:
+                db_manager.conn.close()
+                logging.info("数据库连接已关闭")
+
 
 if __name__ == "__main__":
-    scrape_data()
+    try:
+        scrape_data()
+    except Exception as e:
+        logging.error(f"执行 get_GuoJi.py 时发生错误: {e}")
     
