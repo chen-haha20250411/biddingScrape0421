@@ -66,11 +66,12 @@ else:
         prjNo = item['prjNo']
         publishDate = item['publishDate']
         bulletinId = item['bulletinId']
+        auid=item['autoid']
         # 打印信息
         print(f"标题: {bulletinTitle}, 项目编号: {prjNo}, 发布时间: {publishDate}, bulletinId: {bulletinId}")
 
         # 构建详细信息的 URL 并发送请求
-        detail_url = f"https://ygcg.nbcqjy.org/detail?bulletinId={bulletinId}"
+        detail_url = f"https://ygcg.nbcqjy.org/detail?bulletinId={auid}"
         try:
             # 修改详情请求调用
             detail_response = requests.get(detail_url, headers=headers)

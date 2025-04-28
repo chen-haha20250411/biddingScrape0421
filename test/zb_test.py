@@ -1,10 +1,9 @@
 import requests
 import time
-import mysql.connector
 import datetime
 import logging
-from database_utils.db_manager import DBManager
-from database_utils.zbdb import process_and_insert_data
+import sys  
+sys.path.append('..')  # 添加上级目录到Python路径
 from database_utils.utils import get_time_range
 import configparser
 import json
@@ -94,7 +93,7 @@ def read_config(file_path):
             if index not in sup_dic:
                 sup_dic[index] = {}
             sup_dic[index][sub_key] = value
-        return sup_dic
+        return  sup_dic
     except FileNotFoundError:
         logging.error("配置文件未找到，请检查文件路径。")
         return {}, {}, {}, {}
@@ -114,123 +113,89 @@ def parse_date(date_str):
 def getdata(supName, enterpriseId, cookies, headers, json_data):
     data_all = [['日期', '项目编号', '客户', '类型', '标题', '货品名称', '合计金额', '备注', '供应商']]
     json_data['query']['enterpriseId'] = enterpriseId
-    db_manager = DBManager()
-    conn = db_manager.connect_db()
-    if not conn:
-        logging.error(f"{supName} 数据库连接失败")
-        return
+    start_date, end_date = get_time_range()
+    if start_date is None:
+        logging.warning("无法获取有效的开始日期，使用默认值 2025-04-01")
+        start_date = datetime.date(2025, 4, 1)
+        end_date = datetime.date(2025,12,31)
+
+    page_num = 1
+    while True:
+        json_data['query']['pageNum'] = page_num
+        try:
+            response = requests.post(
+                URL,
+                cookies=cookies,
+                headers=headers,
+                json=json_data
+            )
+            response.raise_for_status()  # 检查请求是否成功
+            Js_data = response.json().get("data")
+            if not Js_data:
+                logging.info(f"{supName} 没有数据")
+                break  # 没有数据则退出循环
+            data_list = Js_data.get("dataList")
+            if not data_list:
+                logging.info(f"{supName} 没有数据列表")
+                break  # 没有数据列表则退出循环
+            for list_item in data_list:
+                publish_date_str = list_item.get("publishDate")
+                if not publish_date_str:
+                    continue
+                publish_date = parse_date(publish_date_str)
+                if not publish_date or publish_date < start_date or publish_date > end_date:
+                    logging.info(f"{supName} 日期: {publish_date} 不符合")
+                    break  # 日期小于开始日期则跳出内层循环
+
+                info = [
+                    publish_date_str,
+                    list_item.get("projectNo"),
+                    list_item.get("tenderPrincipal")[0].get("name") if list_item.get("tenderPrincipal") else None,
+                    list_item.get("noticeType"),
+                    list_item.get('title'),
+                    str(list_item.get('productLabels')).strip("[]'").replace("'", ""),
+                    list_item.get("winnerAmount") if list_item.get("winnerAmount") else 0,
+                    str(list_item.get("displayTags")).strip("[]'").replace("'", ""),
+                    list_item.get("winnerPrincipal")[0].get("name") if list_item.get("winnerPrincipal") else None
+                ]
+                data_all.append(info)
+            else:
+                page_num += 1
+                continue
+            break  # 日期小于开始日期则跳出外层循环
+        except requests.RequestException as e:
+            logging.error(f"请求出错: {e}")
+            break
+        except json.JSONDecodeError as e:
+            logging.error(f"JSON 解析出错: {e}")
+            break
+        finally:
+            time.sleep(REQUEST_DELAY)  # 每次请求后等待一段时间
 
     try:
-        mycursor = conn.cursor(buffered=True)
-        start_date, end_date = get_time_range()
-        if start_date is None:
-            logging.warning("无法获取有效的开始日期，使用默认值 2025-04-01")
-            start_date = datetime.date(2025, 4, 1)
-            end_date = datetime.date(2025, 12, 31)
+        for i in range(1, len(data_all)):
+            logging.info(f"{supName} 第{i}行数据：{data_all[i]}")
+    except Exception as e:
+        logging.error(f"{supName} 处理和插入数据时出错: {e}")
+        raise  # 重新抛出异常，让调用方知道发生了错误
 
-        page_num = 1
-        while True:
-            json_data['query']['pageNum'] = page_num
-            try:
-                response = requests.post(
-                    URL,
-                    cookies=cookies,
-                    headers=headers,
-                    json=json_data
-                )
-                response.raise_for_status()
-                Js_data = response.json().get("data")
-                if not Js_data:
-                    logging.info(f"{supName} 没有数据")
-                    break
-                data_list = Js_data.get("dataList")
-                if not data_list:
-                    logging.info(f"{supName} 没有数据列表")
-                    break
-                for list_item in data_list:
-                    publish_date_str = list_item.get("publishDate")
-                    if not publish_date_str:
-                        continue
-                    publish_date = parse_date(publish_date_str)
-                    if not publish_date or publish_date < start_date or publish_date > end_date:
-                        logging.info(f"{supName} 日期: {publish_date} 不符合区间")
-                        break
-
-                    info = [
-                        publish_date_str,
-                        list_item.get("projectNo"),
-                        list_item.get("tenderPrincipal")[0].get("name") if list_item.get("tenderPrincipal") else None,
-                        list_item.get("noticeType"),
-                        list_item.get('title'),
-                        str(list_item.get('productLabels')).strip("[]'").replace("'", ""),
-                        list_item.get("winnerAmount") if list_item.get("winnerAmount") else 0,
-                        str(list_item.get("displayTags")).strip("[]'").replace("'", ""),
-                        list_item.get("winnerPrincipal")[0].get("name") if list_item.get("winnerPrincipal") else None
-                    ]
-                    data_all.append(info)
-                else:
-                    page_num += 1
-                    continue
-                break
-            except requests.RequestException as e:
-                logging.error(f"{supName} 请求出错: {e}")
-                break
-            except json.JSONDecodeError as e:
-                logging.error(f"{supName} JSON 解析出错: {e}")
-                break
-            finally:
-                time.sleep(REQUEST_DELAY)
-
-        # 数据插入，带重试
-        for attempt in range(3):
-            try:
-                process_and_insert_data(supName,conn, mycursor, data_all)
-                logging.info(f"{supName} 数据成功插入{len(data_all)-1}条")
-                break
-            except Exception as e:
-                logging.error(f"{supName} 处理和插入数据时出错（第{attempt+1}次）: {e}")
-                if attempt == 2:
-                    logging.error(f"{supName} 数据插入最终失败")
-                else:
-                    time.sleep(2)
-    finally:
-        try:
-            if 'mycursor' in locals() and mycursor:
-                mycursor.close()
-            if conn and hasattr(conn, 'is_connected') and conn.is_connected():
-                conn.close()
-                logging.debug(f"{supName} 数据库连接已关闭")
-        except Exception as e:
-            logging.error(f"{supName} 关闭连接时发生错误: {e}")
 
 def scrape_data():
     try:
-        sup_dic = read_config('config/xunbiaow_cookies.txt')
-        # sup_dic={
-        #     '1': {
-        #         'supname': '宁波华力信息系统工程有限公司',
-        #         'enterpriseid': 'NTc0NTgzMzE3MjU5MTI4'}
-        # }
-        
-        # 并发请求
-        with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_CONCURRENT_REQUESTS) as executor:
-            futures = []
-            for value in sup_dic.values():
-                futures.append(executor.submit(
-                    getdata,
-                    value.get("supname"),
-                    value.get("enterpriseid"),
-                    cookies,
-                    headers,
-                    json_data.copy()  # 每个线程用自己的json_data副本
-                ))
-            for future in concurrent.futures.as_completed(futures):
-                try:
-                    future.result()
-                except Exception as e:
-                    logging.error(f"线程任务出错: {e}")
+        sup_dic={
+            '1': {
+                'supname': '宁波华力信息系统工程有限公司',
+                'enterpriseid': 'NTc0NTgzMzE3MjU5MTI4'}
+        }
+
+        for value in sup_dic.values():
+            getdata(value.get("supname"), value.get("enterpriseid"), cookies, headers, json_data)
+            logging.info(f"{value.get('supname')} 任务完成")
     except Exception as e:
         logging.error(f"执行 get_xunbiaowang.py 时发生错误: {e}")
 
 if __name__ == "__main__":
-    scrape_data()
+    try:
+        scrape_data()
+    except Exception as e:
+        logging.error(f"执行 get_GuoJi.py 时发生错误: {e}")
