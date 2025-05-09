@@ -11,10 +11,21 @@ def process_and_insert_data(supName,connection, mycursor, data_all, batch_size=1
     
     for row in data_all[1:]:
         publish_date, project_no, customer, notice_type, title, product_labels, winner_amount, remark, winner_principal = row
-        logging.info(f"项目编号: {project_no}, 客户: {customer}, 公告类型: {notice_type}, 标题: {title}, 产品标签: {product_labels}, 中标金额: {winner_amount}, 备注: {remark}, 中标人: {winner_principal}")
-        check_query = "SELECT projectNo, customer, winnerAmount, noticeType FROM zhongbiao WHERE `projectNo` = %s"
+
+        # 处理 projectNo 为空的情况
+        if project_no == '' or project_no is None:
+            project_no_condition = "(`projectNo` = '' OR `projectNo` IS NULL)"
+        else:
+            project_no_condition = "`projectNo` = %s"
+
+        check_query = f"SELECT publishDate,projectNo, customer, winnerAmount, noticeType FROM zhongbiao WHERE {project_no_condition} and customer = %s and winnerAmount = %s and noticeType = %s and productLabels = %s"
+        if project_no == ''or project_no is None:
+            query_params = (customer, winner_amount, notice_type, product_labels)
+        else:
+            query_params = (project_no, customer, winner_amount, notice_type, product_labels)
+
         try:
-            mycursor.execute(check_query, (project_no,))
+            mycursor.execute(check_query, query_params)
             existing_row = mycursor.fetchone()
             mycursor.fetchall()
         except mysql.connector.Error as err:
@@ -22,12 +33,16 @@ def process_and_insert_data(supName,connection, mycursor, data_all, batch_size=1
             continue
 
         if existing_row:
+            # logging.info(f"存在 日期：{publish_date},客户: {customer},  中标金额: {winner_amount},公告类型: {notice_type} ")
             # logging.info(f"金额：{existing_row[2]},公告类型:{existing_row[3]}")
-            existing_amount = existing_row[2]
-            existing_notice_type = existing_row[3]
-            if float(existing_amount) != float(winner_amount) and existing_notice_type != notice_type:
+            exisit_publish_date = existing_row[0]
+            exisit_customer = existing_row[2]
+            existing_amount = existing_row[3]
+            existing_notice_type = existing_row[4]
+            if float(existing_amount) != float(winner_amount) and existing_notice_type != notice_type and exisit_publish_date != publish_date and exisit_customer!= customer:
                 update_data.append((publish_date, customer, notice_type, title, product_labels, winner_amount, remark, winner_principal, project_no))
         else:
+            logging.info(f"寻标网新增 日期：{publish_date},编号：{project_no}, 客户: {customer},  中标金额: {winner_amount},公告类型: {notice_type} ")
             insert_data.append((publish_date, project_no, customer, notice_type, title, product_labels, winner_amount, remark, winner_principal))
 
     try:
@@ -49,8 +64,8 @@ def process_and_insert_data(supName,connection, mycursor, data_all, batch_size=1
             for i in range(0, len(insert_data), batch_size):
                 batch = insert_data[i:i + batch_size]
                 insert_query = """
-                INSERT INTO zhongbiao (`publishDate`, `projectNo`, `customer`, `noticeType`, `title`, `productLabels`, `winnerAmount`, `remark`, `winnerPrincipal`)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                INSERT INTO zhongbiao (`publishDate`, `projectNo`, `customer`, `noticeType`, `title`, `productLabels`, `winnerAmount`, `remark`, `winnerPrincipal`,`is_del`)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s,0)
                 """
                 mycursor.executemany(insert_query, batch)
                 # logging.info(f"插入了 {len(batch)} 条数据")

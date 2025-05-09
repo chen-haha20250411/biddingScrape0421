@@ -45,8 +45,8 @@ class DBManager:
             conn = self.connection_pool.get_connection()
             cursor = conn.cursor()
             
-            sql = "INSERT INTO bidding_info (project_number, project_name, publish_date, content, project_id, total_content, data_source, html_url) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
-            val = (project_number, project_name, publish_date, content, project_id, total_content, data_source, html_url)
+            sql = "INSERT INTO bidding_info (project_number, project_name, publish_date, content, project_id, total_content, data_source, html_url,is_del) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
+            val = (project_number, project_name, publish_date, content, project_id, total_content, data_source, html_url,0)
             cursor.execute(sql, val)
             conn.commit()
         except mysql.connector.IntegrityError:
@@ -68,8 +68,8 @@ class DBManager:
             cursor = conn.cursor()
             
             sql = """INSERT INTO bidding_info 
-                    (project_number, project_name, publish_date, content, project_id, total_content, data_source, html_url) 
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"""
+                    (project_number, project_name, publish_date, content, project_id, total_content, data_source, html_url,is_del) 
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s,0)"""
             
             # 使用事务处理批量插入
             conn.start_transaction()
@@ -96,7 +96,20 @@ class DBManager:
                 cursor.close()
             if 'conn' in locals():
                 conn.close()
-
+    def check_project_id_exists(self, project_id):
+        try:
+            cursor = self.conn.cursor()
+            # 假设表名为 your_table，列名为 item_id 和 project_number，根据实际情况修改
+            query = "SELECT 1 FROM bidding_info WHERE project_id = %s"
+            cursor.execute(query, (project_id))
+            result = cursor.fetchone()
+            return result is not None
+        except Exception as e:
+            logging.error(f"检查记录是否存在时出错: {e}")
+            return False
+        finally:
+            if cursor:
+                cursor.close()
     def check_item_id_exists(self, project_number, item_id):
         try:
             cursor = self.conn.cursor()

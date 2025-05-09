@@ -12,7 +12,8 @@ logging.basicConfig(
 SCRIPTS = [
     'get_GuoJi',
     'get_sun',
-    'get_xunbiaowang'
+    'get_xunbiaowang',
+    'new_get_monthly_bidding',
 ]
 
 def run_script(script_name):

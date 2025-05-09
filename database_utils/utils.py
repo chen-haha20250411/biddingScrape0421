@@ -1,6 +1,7 @@
 import logging
 import configparser
 from datetime import datetime
+import os
 
 class FileUtils:
     @staticmethod
@@ -10,6 +11,14 @@ class FileUtils:
                 return [line.strip() for line in f.readlines()]
         except FileNotFoundError:
             logging.error("关键字文件 config/keywords.txt 未找到。")
+            return []
+
+    def read_VIEWSTATE_config():
+        try:
+            with open('config/data_config_for_scrape.txt', 'r', encoding='utf-8') as f:
+                return [line.strip() for line in f.readlines()]
+        except Exception as e:
+            logging.error(f"读取文件失败: {e}")
             return []
 
 # 读取时间范围配置的方法
@@ -25,3 +34,6 @@ def get_time_range():
     except Exception as e:
         logging.error(f"读取时间范围配置失败: {e}")
         return None, None
+
+if __name__ == '__main__':
+    print(FileUtils.read_VIEWSTATE_config())

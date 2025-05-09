@@ -153,7 +153,7 @@ def getdata(supName, enterpriseId, cookies, headers, json_data):
                         continue
                     publish_date = parse_date(publish_date_str)
                     if not publish_date or publish_date < start_date or publish_date > end_date:
-                        logging.info(f"{supName} 日期: {publish_date} 不符合区间")
+                        logging.info(f"【寻标网】 {supName} 日期: {publish_date} 不符合区间")
                         break
 
                     info = [
@@ -185,7 +185,7 @@ def getdata(supName, enterpriseId, cookies, headers, json_data):
         for attempt in range(3):
             try:
                 process_and_insert_data(supName,conn, mycursor, data_all)
-                logging.info(f"{supName} 数据成功插入{len(data_all)-1}条")
+                # logging.info(f"{supName} 数据成功插入{len(data_all)-1}条")
                 break
             except Exception as e:
                 logging.error(f"{supName} 处理和插入数据时出错（第{attempt+1}次）: {e}")
