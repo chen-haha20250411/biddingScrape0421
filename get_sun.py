@@ -68,7 +68,7 @@ def process_item(bulletinId, autoId, matched_keywords, bulletinTitle, prjNo, pub
     """处理单个公告项"""
     with processed_ids_lock:
         if bulletinId in processed_ids:
-            logging.info(f"公告ID {bulletinId} 已在处理中或已完成，跳过")
+            # logging.info(f"公告ID {bulletinId} 已在处理中或已完成，跳过")
             return None
         processed_ids.add(bulletinId)
     

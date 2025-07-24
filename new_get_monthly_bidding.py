@@ -10,6 +10,7 @@ import logging
 from database_utils.utils import FileUtils, get_time_range  # 导入 FileUtils 和 get_time_range 函数
 from database_utils.db_manager import DBManager  # 导入 DBManager 类
 
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 # 禁用代理设置
 os.environ['no_proxy'] = '*'
 os.environ['NO_PROXY'] = '*'
@@ -20,7 +21,7 @@ os.environ['HTTPS_PROXY'] = ''
 
 # 全局变量
 cookies = {
-    'ASP.NET_SessionId': 'A04C7BCF5A774099812F7986',
+    'ASP.NET_SessionId': 'C256E23698F6D98985D1B425',
 }
 
 headers = {
@@ -36,11 +37,11 @@ headers = {
     'Sec-Fetch-Site': 'same-origin',
     'Sec-Fetch-User': '?1',
     'Upgrade-Insecure-Requests': '1',
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36 Edg/135.0.0.0',
-    'sec-ch-ua': '"Microsoft Edge";v="135", "Not-A.Brand";v="8", "Chromium";v="135"',
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36 Edg/136.0.0.0',
+    'sec-ch-ua': '"Chromium";v="136", "Microsoft Edge";v="136", "Not.A/Brand";v="99"',
     'sec-ch-ua-mobile': '?0',
     'sec-ch-ua-platform': '"Windows"',
-    # 'Cookie': 'ASP.NET_SessionId=A04C7BCF5A774099812F7986',
+    # 'Cookie': 'ASP.NET_SessionId=C256E23698F6D98985D1B425',
 }
 
 
@@ -76,32 +77,26 @@ def get_detail_info(url):
                     project_title_text = ''
                 return project_number_text,total_content
             except Exception as e:
-                print(f"提取政府招标网详细页面时出错: {str(e)}")
+                logging.error(f"提取政府招标网详细页面时出错: {str(e)}")
                 return '', '', total_content
         else:
-            print(f"获取政府招标网详情页失败。状态码: {response.status_code}")
+            logging.error(f"获取政府招标网详情页失败。状态码: {response.status_code}")
             return None
     except Exception as e:
-        print(f"请求详情页时出错: {str(e)}")
+        logging.error(f"政府采购网请求详情页时出错: {str(e)}")
         return None
 
 
 def scrape_data():
-    print("政府采购网开始采集招标信息...")
+    logging.info("政府采购网开始采集招标信息...")
     min_delay = 1
     max_delay = 3
-    start_date, end_date = get_time_range()
-    print(f"开始时间: {start_date} 结束时间: {end_date}")
-    if start_date is None or end_date is None or start_date=='' or end_date=='':
-        print("无法获取有效的时间范围。")
-        return None
-    else:
-        start_date = '2025-04-01'
-        end_date = '2025-05-30'
+    start_datetime, end_datetime = get_time_range()
+    logging.info(f"开始时间: {start_datetime} 结束时间: {end_datetime}")
+    if start_datetime is None or end_datetime is None or start_datetime=='' or end_datetime=='':
+        logging.info("政府采购网无法获取有效的时间范围。")
+        return 
     
-    # 将字符串日期转换为datetime对象
-    start_datetime = datetime.strptime(start_date, '%Y-%m-%d').date()
-    end_datetime = datetime.strptime(end_date, '%Y-%m-%d').date()
     
     keywords = FileUtils.read_keywords()
     VIEWSTATE = FileUtils.read_VIEWSTATE_config()
@@ -115,7 +110,7 @@ def scrape_data():
         all_data = []
         stop_fetching = False
         current_page = 1
-        max_retries = 3  # 添加最大重试次数
+        max_retries = 10  # 添加最大重试次数
         retry_count = 0  # 添加重试计数器
         processed_project_ids = set()
         processed_project_numbers = set()
@@ -133,7 +128,7 @@ def scrape_data():
                     'txtNoticeDate2': '',
                     'pager_input': '1',
                     '__EVENTARGUMENT': str(current_page),
-                    '__EVENTVALIDATION': '/wEdAAEAAAD/////AQAAAAAAAAAPAQAAACoAAAAI7B8geKJluxAY6QJJ5FpDT0iTMrvMNu4/mFgs0qE5TPNwkzCG3ehzstMxLQ3kd1t0cIhQbRs8OAdGImrXITIU2QRNXonJ6kw0h09aFU0PzNj8bp8ZMCkemwxI3etR436dz/Kor9S2t8I0syNvqRPlHeCnwkZkOF1576jJ8mTw4Y2hZUU3TViMvPaSE6fwcWEfe92rsqbOWyzx57p9OEI7Cs4Vz75f8UBACwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIFzi/EY1615mwTY4oYTBF8XDUum+hHov71XPUszGnSq',
+                    '__EVENTVALIDATION': '''/wEdAAEAAAD/////AQAAAAAAAAAPAQAAACQAAAAI7B8geKJluxDkWkNPSJMyu8w27j8uxBmJ5HdbdHCIUG0bPDgHRiJq1wRNXonJ6kw0h09aFU0PzNj8bp8ZMCkemwxI3etR436dz/Kor9S2t8I0syNvqRPlHeCnwkZkOF1576jJ8mTw4Y2hZUU3TViMvPaSE6fwcWEfe92rsqbOWyzx57p9OEI7Cs4Vz75f8UBACwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAN1QCuXooYFJjyhyhSXgIPzPhzTgaMItaUVBPwTlgRMh''',
                     '__EVENTTARGET': 'pager',
                 }
                 data_dict['__VIEWSTATE']= VIEWSTATE
@@ -146,7 +141,7 @@ def scrape_data():
                 if current_page == 1:
                     response = requests.get('https://zfcg.czj.ningbo.gov.cn/project/zcyNotice.aspx', params=params, cookies=cookies, headers=headers)
                 else:
-                    # print(f"正在处理第 {current_page} 页, {data_dict}")
+                    # logging.info(f"正在处理第 {current_page} 页, {data_dict}")
                     
                     response = requests.post(
                         'https://zfcg.czj.ningbo.gov.cn/project/zcyNotice.aspx',
@@ -169,7 +164,7 @@ def scrape_data():
                     if table :
                         rows = table.find_all('tr')[1:]
                         if not rows:  # 如果表格没有数据行
-                            print(f"政府采购网第 {current_page} 页表格为空，停止抓取")
+                            logging.info(f"政府采购网第 {current_page} 页表格为空，停止抓取")
                             stop_fetching = True
                             break
 
@@ -182,7 +177,7 @@ def scrape_data():
                                 # 检查日期是否在范围内
                                 if publish_date:
                                     if publish_date < start_datetime or publish_date > end_datetime:
-                                        print(f"政府采购网日期 {publish_date} 不在配置范围内，停止抓取")
+                                        logging.info(f"政府采购网日期 {publish_date} 不在配置范围内，停止抓取")
                                         stop_fetching = True
                                         break
 
@@ -209,21 +204,21 @@ def scrape_data():
                                     project_id = notice_href.split('Id=')[1] if notice_href else ''
                                     # 检查project_id是否已存在
                                     if project_id in processed_project_ids:
-                                        print(f"政府采购网记录ID {project_id} 已处理，跳过")
+                                        # logging.info(f"政府采购网记录ID {project_id} 已处理，跳过")
                                         continue
                                     # 检查数据库中是否存在
                                     if db_manager.check_project_id_exists((project_id,)):
-                                        print(f"政府采购网记录ID {project_id} 已存在于数据库，跳过")
+                                        # logging.info(f"政府采购网记录ID {project_id} 已存在于数据库，跳过")
                                         processed_project_ids.add(project_id)
                                         continue
                                     html_url = f"https://zfcg.czj.ningbo.gov.cn/project/zcyNotice_view.aspx?Id={project_id}"
                                     # 检查project_number是否已存在
                                     if project_id in processed_project_numbers:
-                                        print(f"政府采购网项目编号 {project_id} 已处理，跳过")
+                                        # logging.info(f"政府采购网项目编号 {project_id} 已处理，跳过")
                                         continue
                                     # 不存在则查询详情页
                                     project_number, detail_result = get_detail_info(notice_href)
-                                    print(f"第{current_page}页 ,发布日期： {publish_date}, 项目编号: {project_number}, 项目名称: {project_title}, 详情页链接: {notice_href}")  # 调试用，打印项目信息和详情页链接
+                                    logging.info(f"政府采购网 第{current_page}页 ,发布日期： {publish_date}, 项目编号: {project_number}, 项目名称: {project_title}, 详情页链接: {notice_href}")  # 调试用，打印项目信息和详情页链接
                                     if project_number:
                                         # 添加到已处理集合
                                         processed_project_ids.add(project_id)
@@ -232,28 +227,28 @@ def scrape_data():
                                         page_data.append((project_number, project_title, publish_date, '', project_id, detail_result, data_source, html_url))
                         if page_data:
                             all_data.extend(page_data)
-                            print(f"在政府采购网第 {current_page} 页找到 {len(page_data)} 条新记录")
+                            logging.info(f"在政府采购网第 {current_page} 页找到 {len(page_data)} 条新记录")
                             retry_count = 0  # 重置重试计数
                         else:
-                            print(f"政府采购网获取第 {current_page} 页成功，但未找到新数据。")
+                            logging.info(f"政府采购网获取第 {current_page} 页成功，但未找到新数据。")
                             retry_count += 1  # 增加重试计数
                             if retry_count >= max_retries:
-                                print(f"连续 {max_retries} 页未找到新数据，停止抓取")
+                                logging.info(f"政府采购网连续 {max_retries} 页未找到新数据，停止抓取")
                                 stop_fetching = True
                                 break
                     else:
-                        print(f"政府采购网获取第 {current_page} 页成功，但未找到表格。")
+                        logging.error(f"政府采购网获取第 {current_page} 页成功，但未找到表格。")
                         retry_count += 1
                         if retry_count >= max_retries:
-                            print(f"连续 {max_retries} 页未找到表格，停止抓取")
+                            logging.info(f"政府采购网连续 {max_retries} 页未找到表格，停止抓取")
                             stop_fetching = True
                             break
 
                 else:
-                    print(f"政府采购网获取第 {current_page} 页失败。状态码: {response.status_code}")
+                    logging.error(f"政府采购网获取第 {current_page} 页失败。状态码: {response.status_code}")
                     retry_count += 1
                     if retry_count >= max_retries:
-                        print(f"连续 {max_retries} 次请求失败，停止抓取")
+                        logging.info(f"连续 {max_retries} 次请求失败，停止抓取")
                         stop_fetching = True
                         break
 
@@ -261,10 +256,10 @@ def scrape_data():
                 time.sleep(random.uniform(min_delay, max_delay))
 
             except Exception as e:
-                print(f"政府采购网获取第 {current_page} 页时出错: {str(e)}")
+                logging.error(f"政府采购网获取第 {current_page} 页时出错: {str(e)}")
                 retry_count += 1
                 if retry_count >= max_retries:
-                    print(f"连续 {max_retries} 次发生错误，停止抓取")
+                    logging.error(f"连续 {max_retries} 次发生错误，停止抓取")
                     stop_fetching = True
                     break
 
@@ -272,7 +267,7 @@ def scrape_data():
             try:
                 success = db_manager.batch_insert_data(all_data)
                 if success:
-                    print(f"政府采购网成功批量插入 {len(all_data)} 条数据")
+                    logging.info(f"政府采购网成功批量插入 {len(all_data)} 条数据")
                 else:
                     logging.error("政府采购网批量插入数据失败")
             except Exception as e:
@@ -281,9 +276,9 @@ def scrape_data():
             finally:
                 if hasattr(db_manager, 'conn') and db_manager.conn:
                     db_manager.conn.close()
-                    print("数据库连接已关闭")
+                    logging.info("政府采购网数据库连接已关闭")
     except Exception as e:
-        print(f"发生错误: {str(e)}")
+        logging.error(f"政府采购网发生错误: {str(e)}")
         return None
 
 

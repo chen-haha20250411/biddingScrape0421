@@ -90,7 +90,7 @@ def scrape_data():
                         matched_keywords.append(keyword)
                 if matched_keywords:
                     if db_manager.check_item_id_exists(project_number, item_id):
-                        logging.info(f"国际招标网记录 ID {item_id} 已存在于数据库中，跳过处理。")
+                        # logging.info(f"国际招标网记录 ID {item_id} 已存在于数据库中，跳过处理。")
                         continue
 
                     # 构建详情页URL
@@ -105,7 +105,7 @@ def scrape_data():
                         
                         # 添加到待插入列表，而不是立即插入
                         data_to_insert.append((
-                            project_number, title, publish_date, total_content,
+                            project_number, title, publish_date, contents,
                             item_id, total_content, data_source, detail_url
                         ))
                         

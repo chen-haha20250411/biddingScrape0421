@@ -59,7 +59,7 @@ class DBManager:
                 cursor.close()
             if 'conn' in locals():
                 conn.close()
-
+   
     def batch_insert_data(self, data_list, batch_size=100):
         """批量插入方法"""
         try:

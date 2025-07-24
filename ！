@@ -1,0 +1,12 @@
+[Unit]
+Description=My Python Scrape Project
+After=network.target
+
+[Service]
+User=root
+WorkingDirectory=/data/pythonscrape/.myproject/
+Environment="PATH=/root/anaconda3/envs/scrapeenv/bin/"
+ExecStart=/root/anaconda3/envs/scrapeenv/bin/python3  /data/pythonscrape/.myproject/bin/python main.py
+
+[Install]
+WantedBy=multi-user.target

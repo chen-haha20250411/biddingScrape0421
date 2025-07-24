@@ -1,0 +1,35 @@
+[sup_dic]
+1.supname = 宁波爱信诺航天信息有限公司
+1.enterpriseId = WEB202507231134465920748
+0.supname= 宁波华力信息系统工程有限公司
+0.enterpriseId= WEB202507231311444001944
+2.supName = 宁波市利宏信息系统工程有限公司
+2.enterpriseId = WEB202507231419418650863
+3.supName = 宁波胜达高科信息工程有限公司
+3.enterpriseId = WEB202507231413280608834 
+4.supName = 宁波中瑞信息科技有限公司
+4.enterpriseId = WEB202507231423293038491 
+5.supName = 宁波市科技园区信达科技有限公司
+5.enterpriseId = WEB202507231424537647101
+6.supName = 宁波市沪东信息工程有限公司
+6.enterpriseId =WEB202507231425556929939
+7.supName = 宁波新远方美承数码科技有限公司
+7.enterpriseId = WEB202507231426480150393
+8.supName = 宁波高欣信息科技有限公司
+8.enterpriseId =WEB202507231428116006513 
+8.ptype = 打印机框架
+9.supName = 宁波市中欣数码科技有限公司
+9.enterpriseId = WEB202507231448084879511
+9.ptype = 打印机框架
+10.supName = 宁波京达联创信息科技有限公司
+10.enterpriseId = WEB202507231450545856469
+10.ptype = 打印机框架
+11.supName = 宁波嘉劲智能科技有限公司
+11.enterpriseId = WEB202507231456517584526
+11.ptype = 打印机框架
+12.supName = 浙江艾凯普计算机系统服务有限公司
+12.enterpriseId = WEB202507231501017124084
+12.ptype = PC
+13.supName = 宁波聚超翔信息技术服务有限公司
+13.enterpriseId = WEB202507231501405275605
+

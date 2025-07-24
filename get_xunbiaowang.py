@@ -81,7 +81,7 @@ json_data = {
 # 定义常量，减少硬编码
 URL = 'https://xunbiaobao.baidu.com/crm/web/bid/xbb/na/bidding/search/api/enterprise'
 REQUEST_DELAY = 1  # 请求间隔时间（秒）
-MAX_CONCURRENT_REQUESTS = 2  # 最大并发请求数
+MAX_CONCURRENT_REQUESTS = 1  # 最大并发请求数
 
 # 从配置文件读取信息
 def read_config(file_path):
@@ -123,6 +123,7 @@ def getdata(supName, enterpriseId, cookies, headers, json_data):
     try:
         mycursor = conn.cursor(buffered=True)
         start_date, end_date = get_time_range()
+        logging.info(f"寻标网 {supName} 数据采集开始时间: {start_date} 结束时间: {end_date}")
         if start_date is None:
             logging.warning("无法获取有效的开始日期，使用默认值 2025-04-01")
             start_date = datetime.date(2025, 4, 1)
