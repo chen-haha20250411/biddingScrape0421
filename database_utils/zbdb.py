@@ -9,17 +9,17 @@ def process_and_insert_fengniao_data(supName,connection, mycursor, data_all, bat
     update_data = []
     insert_data = []
     
-    for row in data_all[1:]:
-        publish_date, project_no, customer, notice_type, title, product_labels, winner_amount, remark, winner_principal,html_url = row
+    for row in data_all[0:]:
+        publish_date, project_no, customer, notice_type, title, product_labels, winner_amount, remark, winner_principal,html_url,detail_content = row
 
         # 处理 projectNo 为空的情况
         if project_no == '' or project_no is None:
            continue   
         project_no_condition = "`projectNo` = %s"
 
-        check_query = f"SELECT publishDate,projectNo, customer, winnerprincipal, noticeType FROM zhongbiao WHERE {project_no_condition}  and winnerPrincipal = %s "
+        check_query = f"SELECT publishDate,projectNo, customer, winnerprincipal, noticeType,winnerAmount FROM zhongbiao WHERE {project_no_condition}  and winnerPrincipal = %s and winnerAmount=%s "
         
-        query_params = (project_no,winner_principal)
+        query_params = (project_no,winner_principal,winner_amount)
 
         try:
             mycursor.execute(check_query, query_params)
@@ -34,11 +34,12 @@ def process_and_insert_fengniao_data(supName,connection, mycursor, data_all, bat
             exisit_publish_date = existing_row[0]
             exisit_customer = existing_row[2]
             exisit_winner_principal = existing_row[3]
-            if   exisit_publish_date != publish_date and exisit_customer!= customer and exisit_winner_principal != winner_principal:
+            exisit_winner_amount=existing_row[5]
+            if   exisit_publish_date != publish_date and exisit_customer!= customer and exisit_winner_principal != winner_principal and exisit_winner_amount!=winner_amount:
                 update_data.append((publish_date, customer, notice_type, title, product_labels, winner_amount, remark, winner_principal, project_no,html_url))
         else:
-            logging.info(f"风鸟网新增 供应商: {supName} , 日期：{publish_date},编号：{project_no}, 客户: {customer},公告类型: {notice_type} ")
-            insert_data.append((publish_date, project_no, customer, notice_type, title, product_labels, winner_amount, remark, winner_principal,html_url))
+            logging.info(f"风鸟网新增 供应商: {supName} , 日期：{publish_date},编号：{project_no},金额:{winner_amount} 客户: {customer},公告类型: {notice_type} ")
+            insert_data.append((publish_date, project_no, customer, notice_type, title, product_labels, winner_amount, remark, winner_principal,html_url,detail_content))
 
     try:
         # 执行更新操作
@@ -59,8 +60,8 @@ def process_and_insert_fengniao_data(supName,connection, mycursor, data_all, bat
             for i in range(0, len(insert_data), batch_size):
                 batch = insert_data[i:i + batch_size]
                 insert_query = """
-                INSERT INTO zhongbiao (`publishDate`, `projectNo`, `customer`, `noticeType`, `title`, `productLabels`, `winnerAmount`, `remark`, `winnerPrincipal`,`is_del`,`html_url`)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s,0,%s)
+                INSERT INTO zhongbiao (`publishDate`, `projectNo`, `customer`, `noticeType`, `title`, `productLabels`, `winnerAmount`, `remark`, `winnerPrincipal`,`is_del`,`html_url`,`html_content`)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s,0,%s,%s)
                 """
                 mycursor.executemany(insert_query, batch)
                 # logging.info(f"插入了 {len(batch)} 条数据")

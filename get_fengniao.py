@@ -9,6 +9,8 @@ from database_utils.utils import get_time_range
 import configparser
 import json
 import concurrent.futures
+import re
+
 
 # 配置日志记录
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -43,7 +45,7 @@ headers = {
 json_data = {
     'filterCnd': 0,
     'page': 1,
-    'size': 200,
+    'size': 100,
     'orderNo': 'WEB202507231413280608834',
     'extractType': 'managementBidNotice',
     'sortField': '',
@@ -53,8 +55,41 @@ json_data = {
 # 定义常量，减少硬编码
 URL = 'https://www.riskbird.com/riskbird-api/companyInfo/list'
 REQUEST_DELAY = 1  # 请求间隔时间（秒）
-MAX_CONCURRENT_REQUESTS = 1  # 最大并发请求数
+MAX_CONCURRENT_REQUESTS = 5  # 最大并发请求数
+max_page_num = 2 #翻页次数
 
+
+
+def safe_float(value):
+    if not value:
+        return 0.0
+    match = re.search(r'[-+]?\d+(?:\.\d+)?', str(value).strip())
+    return round(float(match.group()), 1) if match else 0.0
+
+def get_detail(url):
+    detail_json_data = {'id': url.split('id=')[1].split('&')[0],'extractType': 'managementBidNotice','orderNo': url.split('orderNo=')[1]}
+    response = requests.post(
+        'https://www.riskbird.com/riskbird-api/companyInfo/detail',
+        cookies=cookies,
+        headers=headers,
+        json=detail_json_data,
+        timeout=10  # 关键！
+    )
+    if response.status_code == 200:
+        Js_data = response.json().get("data")
+        if not Js_data:
+            logging.info("没有数据")
+            return   0 ,'',''
+        else :
+            #  logging.info(Js_data.get("znum"))
+            #  logging.info(Js_data.get("content"))
+           num = safe_float(Js_data.get("znum"))
+           return num ,Js_data.get("content"),Js_data.get("contentHtml")
+
+
+    else:
+            print(f"获取详情页失败。状态码: {response.status_code}")
+            return   0 ,'',''
 
 # 从配置文件读取信息
 def read_config(file_path):
@@ -89,7 +124,7 @@ def parse_date(date_str):
 
 # 获取数据
 def getdata(supName, enterpriseId, cookies, headers, json_data):
-    data_all = [['日期', '项目编号', '客户', '类型', '标题', '货品名称', '合计金额', '备注', '供应商']]
+    data_all = []
     json_data['orderNo'] = enterpriseId
     db_manager = DBManager()
     conn = db_manager.connect_db()
@@ -107,17 +142,26 @@ def getdata(supName, enterpriseId, cookies, headers, json_data):
             end_date = datetime.date(2025, 12, 31)
 
         page_num = 1
-        max_page_num = 1
+        start_time = time.time()
         while page_num <= max_page_num:
+            if time.time() - start_time > 120:  # 最多跑 2 分钟
+                logging.warning(f"{supName} 运行超时，强制退出")
+                break
+            # 在 getdata() 的循环中添加
+            if page_num % 5 == 0:
+                elapsed = time.time() - start_time
+                logging.info(f"{supName} 已处理 {page_num} 页, 耗时 {elapsed:.1f} 秒")
             json_data['page'] = page_num
             json_data['orderNo'] = enterpriseId
             # logging.info(f"风鸟网 {supName} 请求{json_data}")
+            
             try:
                 response = requests.post(
                     URL,
                     cookies=cookies,
                     headers=headers,
-                    json=json_data
+                    json=json_data,
+                    timeout=10  # 关键！
                 )
                 response.raise_for_status()
                 Js_data = response.json().get("data")
@@ -137,12 +181,12 @@ def getdata(supName, enterpriseId, cookies, headers, json_data):
                     if not publish_date or publish_date < start_date or publish_date > end_date:
                         # logging.info(f"nowpage: {page_num} 【风鸟网】 {supName} 日期: {publish_date} 不符合区间")
                         continue  # 跳过本条，继续查下一条
-                    has_valid = True
                     if list_item.get("idStr") is None:
                         html_url = None
                     else:   
                         idstr=list_item.get("idStr")
                         html_url = f"https://www.riskbird.com/detail/bidding?id={idstr}&orderNo={enterpriseId}"
+                        zb_number, detail_content,detail_html_content =get_detail(html_url)
                     info = [
                         publish_date_str,
                         list_item.get("idStr"),
@@ -150,10 +194,11 @@ def getdata(supName, enterpriseId, cookies, headers, json_data):
                         list_item.get("type"),
                         list_item.get('title'),
                         list_item.get("content") if list_item.get("content") else None,
-                        0,
+                        zb_number,
                         list_item.get("provinceCn"),
                         supName,
-                        html_url
+                        html_url,
+                        detail_html_content
                         
                     ]
                     data_all.append(info)
@@ -194,12 +239,6 @@ def getdata(supName, enterpriseId, cookies, headers, json_data):
 def scrape_data():
     try:
         sup_dic = read_config('config/fengniao_cookies.txt')
-        # sup_dic={
-        #     '1': {
-        #         'supname': '宁波华力信息系统工程有限公司',
-        #         'enterpriseid': 'NTc0NTgzMzE3MjU5MTI4'}
-        # }
-
         # 并发请求
         with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_CONCURRENT_REQUESTS) as executor:
             futures = []
@@ -213,13 +252,18 @@ def scrape_data():
                     headers,
                     json_data.copy()  # 每个线程用自己的json_data副本
                 ))
-            for future in concurrent.futures.as_completed(futures):
+            for future in concurrent.futures.as_completed(futures, timeout=None):
                 try:
-                    future.result()
+                    future.result(timeout=150)  # 单个任务超时 150 秒
+                except concurrent.futures.TimeoutError:
+                    logging.error("任务超时终止")
                 except Exception as e:
                     logging.error(f"线程任务出错: {e}")
+
     except Exception as e:
         logging.error(f"执行 get_fengniao.py 时发生错误: {e}")
+    finally:
+        logging.info("所有采集任务完成")
 
 
 if __name__ == "__main__":

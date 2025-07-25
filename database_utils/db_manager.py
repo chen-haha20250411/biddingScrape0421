@@ -2,6 +2,8 @@ import mysql.connector
 from mysql.connector import pooling
 import logging
 
+
+
 class DBManager:
     def __init__(self):
         self.connection_pool = None
@@ -17,7 +19,6 @@ class DBManager:
                 user = lines[1].strip()
                 password = lines[2].strip()
                 database = lines[3].strip()
-
             # 创建连接池
             self.connection_pool = pooling.MySQLConnectionPool(
                 pool_name="mypool",
@@ -125,6 +126,14 @@ class DBManager:
             if cursor:
                 cursor.close()
 
+    def is_connected(conn):
+        try:
+            if conn is None:
+                return False
+            conn.ping(reconnect=False)
+            return True
+        except:
+            return False
     def close_connection(self):
         """优化后的连接关闭方法"""
         try:

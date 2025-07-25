@@ -41,3 +41,8 @@ CREATE TABLE IF NOT EXISTS zhongbiao (
     `winnerPrincipal` VARCHAR(255) COMMENT '中标的供应商名称'
 );
 
+ALTER TABLE zhongbiao
+ADD COLUMN html_url VARCHAR(255);
+
+ALTER TABLE zhongbiao 
+ADD COLUMN html_content LONGTEXT COMMENT '抓取的完整HTML源码';

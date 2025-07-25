@@ -30,22 +30,25 @@ def run_script(script_name):
         logging.error(f"运行 {script_name} 时出错: {e}")
 
 def main():
-    """主程序入口"""
+    """主程序入口，带超时和强制退出"""
     with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
-        # 提交所有脚本任务
         future_to_script = {
-            executor.submit(run_script, script): script 
+            executor.submit(run_script, script): script
             for script in SCRIPTS
         }
-        
-        # 等待所有任务完成
-        for future in concurrent.futures.as_completed(future_to_script):
+
+        for future in concurrent.futures.as_completed(future_to_script, timeout=None):  # 全局超时 60 秒
             script = future_to_script[future]
             try:
-                future.result()
+                future.result(timeout=300)  # 单个任务超时 30 秒
                 logging.info(f"{script} 执行完成")
+            except concurrent.futures.TimeoutError:
+                logging.error(f"{script} 执行超时，已取消")
             except Exception as e:
                 logging.error(f"{script} 执行出错: {e}")
+
+        # 强制关闭线程池（防止阻塞）
+        executor.shutdown(wait=False, cancel_futures=True)
 
 if __name__ == "__main__":
     main()
